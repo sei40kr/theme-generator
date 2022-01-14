@@ -1,0 +1,80 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -p neovim -i bash
+
+# shellcheck shell=bash
+# shellcheck disable=SC2016
+
+declare rtp
+declare colorscheme
+declare out_name
+declare setup_hook
+
+help() {
+	cat <<EOF
+USAGE
+  ./generate --rtp         <runtime path> \\
+             --colorscheme <colorscheme> \\
+             --out-name    <output name> \\
+             [--setup-hook <setup hook>]
+
+EXAMPLE
+  ./generate --rtp         /path/to/tokyonight.nvim \\
+             --colorscheme tokyonight \\
+             --out-name    tokyonight_night \\
+             --setup-hook  'let g:tokyonight_style = "night"'
+
+EOF
+	exit
+}
+
+while [[ -n "$1" ]]; do
+	case "$1" in
+	--rtp)
+		rtp="$2"
+		shift 2
+		;;
+	--colorscheme)
+		colorscheme="$2"
+		shift 2
+		;;
+	--setup-hook)
+		setup_hook="$2"
+		shift 2
+		;;
+	--out-name)
+		out_name="$2"
+		shift 2
+		;;
+	-h | --help)
+		help
+		shift
+		;;
+	*)
+		echo 'Error: Invalid parameters' >&2
+		exit 1
+		;;
+	esac
+done
+
+if [[ -z "$rtp" ]]; then
+	echo 'Error: --rtp is not given' >&2
+	exit 1
+fi
+if [[ -z "$colorscheme" ]]; then
+	echo 'Error: --colorscheme is not given' >&2
+	exit 1
+fi
+if [[ -z "$out_name" ]]; then
+	echo 'Error: --out-name is not given' >&2
+	exit 1
+fi
+
+nvim -n -u NONE -i NONE --headless \
+	+"${setup_hook}" \
+	+"set rtp+=${rtp}" \
+	+"colo ${colorscheme}" \
+	+"let g:generator_out_name = '${out_name}'" \
+	+'exe ":so " .. fnamemodify(resolve("$0"), ":h") .. "/generate_main.lua"' \
+	+'q'
+
+# vim: set ft=bash:
