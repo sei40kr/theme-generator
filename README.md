@@ -1,4 +1,4 @@
-# generate-themes-from-vim-colorscheme
+# theme-generator
 
 Generate themes for various tools from a Vim colorscheme!
 
